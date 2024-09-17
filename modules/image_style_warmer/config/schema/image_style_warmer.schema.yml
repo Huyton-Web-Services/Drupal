@@ -1,0 +1,24 @@
+image_style_warmer.settings:
+  type: config_object
+  label: 'Image Style Warmer settings'
+  mapping:
+    initial_image_styles:
+      type: sequence
+      label: 'Initial image styles'
+      sequence:
+        type: string
+        label: 'Image styles'
+    queue_image_styles:
+      type: sequence
+      label: 'Queue image styles'
+      sequence:
+        type: string
+        label: 'Image styles'
+
+action.configuration.image_style_warmer_warmup_file:
+  type: action_configuration_default
+  label: 'Warmup file image styles action'
+
+action.configuration.image_style_warmer_warmup_media:
+  type: action_configuration_default
+  label: 'Warmup media image styles action'

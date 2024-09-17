@@ -1,0 +1,66 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the image_style_warmer module.
+ */
+
+use Drupal\Core\Config\FileStorage;
+
+/**
+ * Implements hook_install().
+ */
+function image_style_warmer_install() {
+  module_set_weight('image_style_warmer', 10);
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function image_style_warmer_uninstall($is_syncing) {
+  \Drupal::service('queue')
+    ->get('image_style_warmer_pregenerator')
+    ->deleteQueue();
+}
+
+/**
+ * Rename upload to initial image styles in image_style_warmer.settings.
+ */
+function image_style_warmer_update_8001(&$sandbox) {
+  $config_factory = \Drupal::configFactory();
+
+  $settingsConfig = $config_factory->getEditable('image_style_warmer.settings');
+  $uploadImageStyles = $settingsConfig->get('upload_image_styles');
+  $queueImageStyles = $settingsConfig->get('queue_image_styles');
+
+  $settingsConfig->clear('upload_image_styles');
+  $settingsConfig->clear('queue_image_styles');
+
+  $settingsConfig->set('initial_image_styles', $uploadImageStyles);
+  $settingsConfig->set('queue_image_styles', $queueImageStyles);
+  $settingsConfig->save();
+}
+
+/**
+ * Set weight of Image Style Warmer module to 10.
+ */
+function image_style_warmer_update_8002(&$sandbox) {
+  module_set_weight('image_style_warmer', 10);
+}
+
+/**
+ * Add new warmup action plugins from config/install and config/optional.
+ */
+function image_style_warmer_update_8003(&$sandbox) {
+  $config_install_path = \Drupal::service('extension.list.module')->getPath('image_style_warmer') . '/config/install';
+  $source = new FileStorage($config_install_path);
+  $config_storage = \Drupal::service('config.storage');
+  $config_storage->write('system.action.image_style_warmer_warmup_file', $source->read('system.action.image_style_warmer_warmup_file'));
+
+  if (\Drupal::service('module_handler')->moduleExists('media')) {
+    $config_optional_path = \Drupal::service('extension.list.module')->getPath('image_style_warmer') . '/config/optional';
+    $source = new FileStorage($config_optional_path);
+    $config_storage = \Drupal::service('config.storage');
+    $config_storage->write('system.action.image_style_warmer_warmup_media', $source->read('system.action.image_style_warmer_warmup_media'));
+  }
+}

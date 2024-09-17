@@ -1,0 +1,22 @@
+{
+  "name": "drupal/tab_manager",
+  "description": "Enables to hide, reorder and rename tabs.",
+  "type": "drupal-module",
+  "license": "GPL-2.0-or-later",
+  "minimum-stability": "dev",
+  "homepage": "https://drupal.org/project/tab_manager",
+  "authors": [
+    {
+      "name": "Andrey Vitushkin (wombatbuddy)",
+      "homepage": "https://www.drupal.org/u/wombatbuddy",
+      "role": "Maintainer"
+    }
+  ],
+  "support": {
+    "issues": "https://www.drupal.org/project/issues/tab_manager",
+    "source": "https://git.drupalcode.org/project/tab_manager"
+  },
+  "require": {
+    "drupal/core": "^8.9 || ^9 || ^10"
+  }
+}

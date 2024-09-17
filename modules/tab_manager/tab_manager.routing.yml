@@ -1,0 +1,19 @@
+tab_manager.settings:
+  path: '/admin/config/user-interface/tab-manager'
+  defaults:
+    _form: '\Drupal\tab_manager\Form\TabManagerSettingsForm'
+    _title: 'Manage Tabs'
+  requirements:
+    _permission: 'manage local task links'
+  options:
+    _admin_route: TRUE
+
+tab_manager.config:
+  path: '/admin/config/tab-manager'
+  defaults:
+    _form: '\Drupal\tab_manager\Form\TabManagerConfigForm'
+    _title: 'Tab Manager сonfiguration'
+  requirements:
+    _permission: 'administer permissions'
+  options:
+    _admin_route: TRUE

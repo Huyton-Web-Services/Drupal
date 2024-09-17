@@ -1,0 +1,10 @@
+node.type.*.third_party.menu_force:
+  type: mapping
+  label: 'Menu Force settings'
+  mapping:
+    menu_force:
+      type: boolean
+      label: 'Menu Force'
+    menu_force_parent:
+      type: boolean
+      label: 'Menu Force Parent'

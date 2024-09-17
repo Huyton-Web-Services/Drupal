@@ -1,0 +1,8 @@
+# These files have been fixed on the Gitlab Templates ESLint job, which uses a better config.
+# However, this config is not used in DrupalCI so the files still need to be ignored.
+# This .eslintignore file is deleted in the pipeline before ESLint is run, so that the files are not ignored there.
+# See https://www.drupal.org/project/scheduler/issues/3432976
+
+js/scheduler_default_time.js
+js/scheduler_default_time_8x.js
+js/scheduler_vertical_tabs.js

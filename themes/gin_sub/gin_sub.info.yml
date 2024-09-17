@@ -1,0 +1,21 @@
+name: Gin Sub-theme
+type: theme
+description: Sub-theme of the Gin theme so Gin must be part of the theme
+'base theme': gin
+version: v0.1.0
+libraries:
+  - gin_sub/global-styling
+core_version_requirement: ^10
+# Regions
+regions:
+  header: 'Header'
+  pre_content: 'Pre-content'
+  breadcrumb: Breadcrumb
+  highlighted: Highlighted
+  help: Help
+  content: Content
+  page_top: 'Page top'
+  page_bottom: 'Page bottom'
+  sidebar_first: 'First sidebar'
+regions_hidden:
+  - sidebar_first

@@ -1,0 +1,14 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the 'Tab Manager' module.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function tab_manager_uninstall() {
+  \Drupal::state()->delete('tab_manager_current_tabs');
+  \Drupal::state()->delete('tab_manager_tabs_page_url');
+}

@@ -1,0 +1,17 @@
+ckeditor5_media_embed_ckeditor5:
+  ckeditor5:
+    plugins:
+      - mediaEmbed.MediaEmbed
+    config:
+      mediaEmbed:
+        previewsInData: true
+  drupal:
+    label: Media Embed
+    library: ckeditor5_media_embed/ckeditor5.mediaEmbed
+    admin_library: ckeditor5_media_embed/admin.mediaembed
+    class: Drupal\ckeditor5_media_embed\Plugin\CKEditor5Plugin\MediaEmbed
+    toolbar_items:
+      mediaembed:
+        label: Media Embed
+    elements: false
+    conditions: []

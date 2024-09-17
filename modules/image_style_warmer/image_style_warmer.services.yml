@@ -1,0 +1,6 @@
+services:
+  image_style_warmer.warmer:
+    class: Drupal\image_style_warmer\ImageStylesWarmer
+    arguments: ['@config.factory', '@entity_type.manager', '@image.factory', '@queue']
+    tags:
+      - { name: needs_destruction }

@@ -1,0 +1,7 @@
+tab_manager.config:
+  type: config_object
+  label: 'Tab Manager config'
+  mapping:
+    apply_changes_for_administrator_role:
+      type: boolean
+      label: 'Apply changes for administrator role'

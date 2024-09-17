@@ -1,0 +1,11 @@
+name: 'Help Topics Twig Tester'
+type: module
+description: 'Support module for help testing.'
+package: Testing
+dependencies:
+  - drupal:help
+
+# Information added by Drupal.org packaging script on 2024-07-04
+version: '10.3.1'
+project: 'drupal'
+datestamp: 1720094222

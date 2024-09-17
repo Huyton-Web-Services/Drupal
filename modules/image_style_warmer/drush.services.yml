@@ -1,0 +1,6 @@
+services:
+  image_style_warmer.commands:
+    class: \Drupal\image_style_warmer\Commands\ImageStyleWarmerCommands
+    arguments: [ '@logger.factory', '@entity_type.manager' ]
+    tags:
+      - { name: drush.command }

@@ -1,0 +1,12 @@
+name: 'Block test'
+type: module
+description: 'Provides test blocks.'
+package: Testing
+# version: VERSION
+dependencies:
+  - drupal:block
+
+# Information added by Drupal.org packaging script on 2024-07-04
+version: '10.3.1'
+project: 'drupal'
+datestamp: 1720094222

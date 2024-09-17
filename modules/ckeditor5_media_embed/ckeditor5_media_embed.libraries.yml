@@ -1,0 +1,10 @@
+ckeditor5.mediaEmbed:
+  js:
+    js/media-embed.js: { minified: true }
+  dependencies:
+    - core/ckeditor5
+
+admin.mediaembed:
+  css:
+    theme:
+      css/ckeditor5_media_embed.admin.css: { }

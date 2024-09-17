@@ -1,0 +1,8 @@
+'manage local task links':
+  title: 'Manage tabs (local task links)'
+  description: 'Allows to hide, reorder and rename tabs (local task links).'
+  restrict access: true
+
+'view all local task links without changes':
+  title: 'View all tabs (local task links), including hidden ones, without changes'
+  description: 'Allows to view all tabs (local task links), including hidden ones, without changes.'

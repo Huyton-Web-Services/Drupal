@@ -1,0 +1,232 @@
+<?php
+
+/**
+ * @file
+ * Contains tab_manager.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
+use Drupal\Core\Entity\ContentEntityInterface;
+
+/**
+ * Implements hook_menu_local_tasks_alter().
+ */
+function tab_manager_menu_local_tasks_alter(&$data, $route_name) {
+
+  // Add cache tags to rerender local tasks after setting changes.
+  $data['cacheability']->addCacheTags([
+    'config:tab_manager.config',
+    'config:tab_manager.settings',
+  ]);
+
+  if ($route_name === 'tab_manager.settings' || $route_name === 'tab_manager.config') {
+    return;
+  }
+
+  $module_handler = \Drupal::service('module_handler');
+  // Check if the "Content translation" module is installed.
+  if ($module_handler->moduleExists('content_translation')) {
+    tab_manager_remove_translate_tab_if_entity_is_not_translatable($data);
+  }
+
+  $route_parameters = \Drupal::routeMatch()->getRawParameters()->all();
+  $current_url = Url::fromRoute($route_name, $route_parameters);
+  // Store url of the current page to use in the TabManagerSettingsForm for
+  // redirect after submit (the goal is to reload the page to see changes).
+  \Drupal::state()->set('tab_manager_tabs_page_url', $current_url);
+
+  $config = \Drupal::config('tab_manager.settings');
+
+  // In our configuration info about tabs stored in the following format:
+  // [$tab_1, tab_2, ... tab_n]
+  // where
+  // $tab_1 = ['id' => 'id-1', 'title' => 'title-1', 'weight' => 'weight-1']
+  // $tab_2 = ['id' => 'id-2', 'title' => 'title-2', 'weight' => 'weight-2']
+  // (this structure is due to the fact that dots keys are not allowed in the
+  // configuration).
+  // Let's transform it into the same structure as using in $data of this hook:
+  // ['id-1' => $tab_1, 'id-2' => tab_2, ... 'id-n' => tab_n]
+  // where
+  // $tab_1 = ['title' => 'title-1', 'weight' => 'weight-1']
+  // $tab_2 = ['title' => 'title-2', 'weight' => 'weight-2'].
+  $modified_tabs = [];
+  $tabs = $config->get('tabs');
+
+  foreach ($tabs as $tab) {
+    $modified_tabs[$tab['id']] = [
+      'title' => $tab['title'],
+      'weight' => $tab['weight'],
+      'hidden' => $tab['hidden'],
+    ];
+  }
+
+  $current_tabs = [];
+  $level = 0;
+
+  // Prepare for storing tabs settings for using in TabManagerSettingsForm.
+  foreach ($data['tabs'] as $tabs) {
+    foreach ($tabs as $key => $value) {
+      if (empty($value['#access'])) {
+        continue;
+      }
+      // Exclude tabs that is not visible because its '#access' key set to
+      // Drupal\Core\Access\AccessResultForbidden.
+      $is_forbidden = method_exists($value['#access'], 'isForbidden') &&  $value['#access']->isForbidden();
+
+      if ($is_forbidden) {
+        continue;
+      }
+      $tab_settings = [
+        'title' => $value['#link']['title'],
+        'weight' => $value['#weight'],
+        'hidden' => 0,
+      ];
+      if (array_key_exists($key, $modified_tabs)) {
+        // Prepare for storing settings for using in TabManagerSettingsForm.
+        $tab_settings['title'] = $modified_tabs[$key]['title'];
+        $tab_settings['weight'] = $modified_tabs[$key]['weight'];
+
+        if ($modified_tabs[$key]['hidden']) {
+          $tab_settings['hidden'] = 1;
+        }
+      }
+      $current_tabs[$level][$key] = $tab_settings;
+    }
+    $level++;
+  }
+  // Store current tabs settings for using in TabManagerSettingsForm.
+  \Drupal::state()->set('tab_manager_current_tabs', $current_tabs);
+
+  $user = \Drupal::currentUser();
+  $user_has_administrator_role = in_array('administrator', $user->getRoles());
+
+  // If a user has the "administrator" role and the option
+  // "Apply changes for administrator role" is set to FALSE, then
+  // then display all tabs, including hidden ones, without changes.
+  // The permission 'view all local task links without changes' will be ignored.
+  // @see https://www.drupal.org/project/tab_manager/issues/3264193
+  if ($user_has_administrator_role) {
+    $config = \Drupal::config('tab_manager.config');
+    if (!$config->get('apply_changes_for_administrator_role')) {
+      // Display all tabs, including hidden ones, without changes.
+      return;
+    }
+  }
+  elseif ($user->hasPermission('view all local task links without changes')) {
+    // Display all tabs, including hidden ones, without changes.
+    return;
+  }
+
+  // Configure current tabs for display (unset hidden, alter weight and title).
+  foreach ($data['tabs'] as &$tabs) {
+    foreach ($tabs as $key => $value) {
+      if (array_key_exists($key, $modified_tabs)) {
+        $tabs[$key]['#link']['title'] = $modified_tabs[$key]['title'];
+        $tabs[$key]['#weight'] = $modified_tabs[$key]['weight'];
+
+        if ($modified_tabs[$key]['hidden']) {
+          unset($tabs[$key]);
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Remove the "Translate" tab if a current entity is not translatable.
+ *
+ * "Content translation" module is installed and a user visit a page of
+ * a content entity. Also, suppose that the translation is not enabled for the
+ * current entity. In this case the hook_menu_local_tasks_alter() returns the
+ * "Translate" tab in $data but it is not visible. The problem is that
+ * this tab will be visible on "Tab Manager" settings form.
+ * To avoid this remove it from the $data before stroring tabs settings.
+ */
+function tab_manager_remove_translate_tab_if_entity_is_not_translatable(&$data) {
+  // -------- Get the current entity -----------------------.
+  $route_match = \Drupal::routeMatch();
+  $route = $route_match->getRouteObject();
+  if (is_null($route)) {
+    return;
+  }
+
+  $parameters = $route->getOption('parameters');
+  if (empty($parameters)) {
+    return;
+  }
+
+  $entity = '';
+  // Determine if the current route represents an entity.
+  foreach ($parameters as $name => $options) {
+    if (isset($options['type']) && strpos($options['type'], 'entity:') === 0) {
+      $entity = $route_match->getParameter($name);
+    }
+  }
+  // If the current entity is translatable then don't remove "Translate" tab.
+  if (!$entity instanceof ContentEntityInterface || $entity->isTranslatable()) {
+    return;
+  }
+
+  // Remove "Translate" tab.
+  foreach ($data['tabs'] as &$tabs) {
+    foreach ($tabs as $key => $value) {
+      if (str_starts_with($key, 'content_translation.local_tasks:')) {
+        unset($tabs[$key]);
+        return;
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_module_implements_alter().
+ *
+ * To be able to overwrite all changes made by other modules, let's make our
+ * implementation of the hook_menu_local_tasks_alter() run last.
+ */
+function tab_manager_module_implements_alter(&$implementations, $hook) {
+  if ($hook != 'menu_local_tasks_alter') {
+    return;
+  }
+  $module = 'tab_manager';
+  $group = $implementations[$module];
+  unset($implementations[$module]);
+  $implementations[$module] = $group;
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for links__dropbutton__operations template.
+ *
+ * Remove the "Edit" button of "English (original)" row
+ * from the "Translations for Tab Manager settings" page.
+ * This is because our form is not intended for non-modal editing and
+ * it only display fields for tabs of a page that has tabs.
+ */
+function tab_manager_preprocess_links__dropbutton__operations(&$variables) {
+  if (!isset($variables['links']['edit'])) {
+    return;
+  }
+
+  $route_name = $variables['links']['edit']['link']['#url']->getRouteName();
+
+  if ($route_name == 'tab_manager.settings') {
+    unset($variables['links']['edit']);
+  }
+}
+
+/**
+ * Implements hook_help().
+ */
+function tab_manager_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the tab_manager module.
+    case 'help.page.tab_manager':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Enables to hide, reorder, deactivate and rename tabs.') . '</p>';
+      return $output;
+
+    default:
+  }
+}

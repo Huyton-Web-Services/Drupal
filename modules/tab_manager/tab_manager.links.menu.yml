@@ -1,0 +1,15 @@
+tab_manager.settings:
+  title: 'Tab Manager'
+  route_name: tab_manager.settings
+  description: 'Configure the Tab Manager module.'
+  parent: system.admin_config_ui
+  options:
+    attributes:
+      class:
+        - 'use-ajax'
+      data-dialog-type:
+        - 'dialog'
+      data-dialog-renderer:
+        - 'off_canvas'
+      data-dialog-options:
+        - '{"width":"30%"}'

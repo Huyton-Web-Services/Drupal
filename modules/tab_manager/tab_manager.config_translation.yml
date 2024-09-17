@@ -1,0 +1,5 @@
+tab_manager.settings:
+  title: 'Tab Manager settings'
+  base_route_name: tab_manager.settings
+  names:
+    - tab_manager.settings
