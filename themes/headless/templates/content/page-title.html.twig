@@ -1,0 +1,5 @@
+{{ title_prefix }}
+{% if title|render|striptags|trim %}
+<h1{{title_attributes}}>CMS</h1>
+{% endif %}
+{{ title_suffix }}

@@ -1,0 +1,57 @@
+<style>
+  .container{
+    max-width: 100% !important;
+    width:100% !important;
+    padding: 0 !important;
+  }
+</style>
+{%
+  set classes = [
+    'node',
+    'node--type-' ~ node.bundle|clean_class,
+    node.isPromoted() ? 'node--promoted',
+    node.isSticky() ? 'node--sticky',
+    not node.isPublished() ? 'node--unpublished',
+    view_mode ? 'node--view-mode-' ~ view_mode|clean_class,
+  ]
+%}
+{{ attach_library('bootstrap5/node') }}
+<article{{ attributes.addClass(classes) }}>
+
+  {{ title_prefix }}
+  {% if label and not page %}
+    <h2{{ title_attributes }}>
+      <a href="{{ url }}" rel="bookmark">{{ label }}</a>
+    </h2>
+  {% endif %}
+  {{ title_suffix }}
+
+  {% set domain = 'https://www.trampcreative.co.uk' %}
+  {% set thisDomain = url('<current>')  %}
+  {% if 'localhost' in thisDomain|render|render %}
+    {% set domain = 'http://localhost:3000' %}
+  {% endif %}
+
+  {%  if logged_in %}
+    {% if node.isPublished() %}
+      <iframe
+        style="height: calc( 100vh - 230px )"
+        width="100%"
+        height="100%"
+        loading="eager"
+        allowfullscreen
+        src="{{ domain }}{{ url }}"
+        title="Test page view"
+      ></iframe>
+    {% else %}
+
+      {{ content }}
+
+    {% endif %}
+  {% else %}
+    <div{{ content_attributes.addClass('node__content') }}>
+      <p>This is the Content Management System, please use the links at the top to navigate.</p>
+    </div>
+  {% endif %}
+
+</article>
